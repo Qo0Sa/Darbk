@@ -49,6 +49,7 @@ struct MetroStation: Identifiable, Codable, Equatable, Hashable {
     let metrostationnamear: String
     let metroline: String
     let metrolinename: String
+    let stationseq: Int
     let geo_point_2d: GeoPoint
     
     static func == (lhs: MetroStation, rhs: MetroStation) -> Bool {
@@ -70,7 +71,7 @@ struct MetroStation: Identifiable, Codable, Equatable, Hashable {
     
     enum CodingKeys: String, CodingKey {
         case metrostationcode, metrostationname, metrostationnamear
-        case metroline, metrolinename, geo_point_2d
+        case metroline, metrolinename, stationseq, geo_point_2d
     }
     
     init(from decoder: Decoder) throws {
@@ -80,6 +81,7 @@ struct MetroStation: Identifiable, Codable, Equatable, Hashable {
         metrostationnamear = (try? container.decode(String.self, forKey: .metrostationnamear)) ?? "غير معروف"
         metroline = (try? container.decode(String.self, forKey: .metroline)) ?? "Unknown"
         metrolinename = (try? container.decode(String.self, forKey: .metrolinename)) ?? "Unknown"
+        stationseq = (try? container.decode(Int.self, forKey: .stationseq)) ?? 0
         geo_point_2d = try container.decode(GeoPoint.self, forKey: .geo_point_2d)
     }
 }
@@ -1005,7 +1007,7 @@ struct StationCard: View {
         .background(Color("grlback")) 
         .cornerRadius(18)
         .shadow(radius: 10, y: 4)
-        .environment(\.layoutDirection, .rightToLeft)
+       // .environment(\.layoutDirection, .rightToLeft)
     }
     
     func lineColorForStation(_ lineCode: String) -> Color {
