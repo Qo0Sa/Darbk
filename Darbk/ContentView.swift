@@ -208,20 +208,43 @@ struct ContentView: View {
                 
                 // نقاط المحطات (نخليها دايمًا)
                 ForEach(stations) { station in
+                    let isSelected = (station == selectedStation)
+                    
                     Annotation(station.metrostationname, coordinate: station.coordinate) {
-                        Circle()
-                            .fill(lineColor(for: station.metroline))
-                            .frame(width: 12, height: 12)
-                            .overlay(
+                        ZStack {
+                            // Glow / halo behind selected station
+                            if isSelected {
                                 Circle()
-                                    .stroke(lineColor(for: station.metroline), lineWidth: 3)
-                            )
-                            .shadow(radius: 2)
-                            .onTapGesture {
-                                selectedStation = station
+                                    .fill(lineColor(for: station.metroline).opacity(0.25))
+                                    .frame(width: 34, height: 34)
                             }
+                            
+                            // Main dot
+                            Circle()
+                                .fill(lineColor(for: station.metroline))
+                                .frame(width: isSelected ? 20 : 12,
+                                       height: isSelected ? 20 : 12)
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color.white, lineWidth: isSelected ? 3 : 2)
+                                )
+                                .shadow(radius: isSelected ? 4 : 2)
+                        }
+                        .onTapGesture {
+                            selectedStation = station
+                            // keep your zoom here if you added it:
+                            cameraPosition = .region(
+                                MKCoordinateRegion(
+                                    center: station.coordinate,
+                                    span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
+                                )
+                            )
+                        }
+                        .animation(.spring(response: 0.25, dampingFraction: 0.8),
+                                   value: isSelected)
                     }
                 }
+
             }
             .mapStyle(.standard(elevation: .flat))
             .ignoresSafeArea()
@@ -912,57 +935,77 @@ struct StationCard: View {
     let onSetAsDestination: () -> Void
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(station.metrostationname)
-                        .font(.headline)
+        VStack(alignment: .trailing, spacing: 12) {
+            
+            // HEADER
+            HStack(alignment: .top) {
+                // Close button (left)
+                Button(action: onClose) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 26, height: 26)
+                        .background(Color.black.opacity(0.35))
+                        .clipShape(Circle())
+                }
+                
+                Spacer()
+                
+                // Names (right)
+                VStack(alignment: .trailing, spacing: 2) {
                     Text(station.metrostationnamear)
+                        .font(.headline)
+                    
+                    Text(station.metrostationname)
                         .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+            }
+            
+            // LINE + CODE
+            HStack(spacing: 8) {
+                // Line color + name
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(lineColorForStation(station.metroline))
+                        .frame(width: 10, height: 10)
+                    
+                    Text(station.metrolinename)
+                        .font(.footnote)
                         .foregroundColor(.secondary)
                 }
                 
                 Spacer()
                 
-                Button(action: onClose) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.gray)
-                        .font(.title2)
-                }
+                // Station code pill
+                Text(station.metrostationcode)
+                    .font(.caption)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color.gray.opacity(0.18))
+                    .cornerRadius(6)
             }
             
-            HStack {
-                Circle()
-                    .fill(lineColorForStation(station.metroline))
-                    .frame(width: 12, height: 12)
-                Text(station.metrolinename)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            
-            Text(station.metrostationcode)
-                .font(.caption)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color.gray.opacity(0.2))
-                .cornerRadius(4)
-            
-            Button {
-                onSetAsDestination()
-            } label: {
-                HStack {
+            // PRIMARY BUTTON
+            Button(action: onSetAsDestination) {
+                HStack(spacing: 6) {
                     Image(systemName: "mappin.and.ellipse")
                     Text("تعيين كوجهة")
                 }
                 .font(.subheadline)
+                .fontWeight(.semibold)
                 .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .foregroundColor(.white)
+                .background(Color(hex: "#3A5C37")) // choose your brand green / blue
+                .clipShape(Capsule())
             }
-            .buttonStyle(.borderedProminent)
         }
-        .padding()
-        .background(.ultraThinMaterial)
-        .cornerRadius(16)
-        .shadow(radius: 10)
+        .padding(16)
+        .background(Color("grlback")) 
+        .cornerRadius(18)
+        .shadow(radius: 10, y: 4)
+        .environment(\.layoutDirection, .rightToLeft)
     }
     
     func lineColorForStation(_ lineCode: String) -> Color {
@@ -977,6 +1020,7 @@ struct StationCard: View {
         }
     }
 }
+
 
 // MARK: - Route Summary Bar
 struct RouteSummaryBar: View {
@@ -1004,15 +1048,18 @@ struct RouteSummaryBar: View {
             
             Spacer()
             
-            Button("مسح المسار") {
+            Button(action: {
                 onClear()
+            }) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(width: 32, height: 32)
+                    .background(Color.red)
+                    .clipShape(Circle())
             }
-            .font(.subheadline)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(accentColor.opacity(0.15))
-            .foregroundColor(accentColor)
-            .cornerRadius(10)
+
+
         }
         .padding(12)
         .background(
