@@ -1,7 +1,11 @@
 {
   "images" : [
     {
+<<<<<<< HEAD
       "filename" : "Darbak_1024_final (1).png",
+=======
+      "filename" : "Darbak_1024_final (1) 2.png",
+>>>>>>> main
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
