@@ -170,18 +170,16 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             Map(position: $cameraPosition) {
-                if routeStations.isEmpty {
-                    ForEach(lines) { line in
-                        MapPolyline(coordinates: line.coordinates)
-                            .stroke(line.color, lineWidth: 4)
-                    }
+                ForEach(lines) { line in
+                    MapPolyline(coordinates: line.coordinates)
+                        .stroke(line.color, lineWidth: 4)
                 }
                 
-                if routeStations.count >= 2 {
-                    let coords = routeStations.map { $0.coordinate }
-                    MapPolyline(coordinates: coords)
-                        .stroke(.gray, lineWidth: 8)
+                if let routeCoords = routePolylineCoordinates(), routeCoords.count >= 2 {
+                    MapPolyline(coordinates: routeCoords)
+                        .stroke(.gray.opacity(0.65), lineWidth: 7)
                 }
+
                 
                 if let userCoord = locationManager.userLocation, !routeStations.isEmpty {
                     Annotation("Train", coordinate: userCoord) {
@@ -282,17 +280,21 @@ struct ContentView: View {
                         .environment(\.layoutDirection, .rightToLeft)
                         .frame(maxWidth: 300)
                     }
-                    
-                    Button(action: { showSearchSheet = true }) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.title2)
-                            .foregroundColor(.lingr)
-                            .padding()
-                            .background(Color(hex: "#BAC5A5"))
-                            .clipShape(Circle())
-                            .shadow(radius: 4)
+                    if selectedStation == nil && destinationStation == nil {
+                        Button(action: { showSearchSheet = true }) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.title2)
+                                .foregroundColor(.white)                         // WHITE ICON = CLEAR
+                                .padding(14)
+                                .background(lineColor(for: "Line5"))             // METRO GREEN or your chosen theme color
+                                .clipShape(Circle())
+                                .shadow(color: lineColor(for: "Line5").opacity(0.5), radius: 8, y: 4)  // STRONG SHADOW
+                        }
+                        
+                        
+                        .padding()
                     }
-                    .padding()
+                    
                 }
                 Spacer()
             }
@@ -357,7 +359,32 @@ struct ContentView: View {
                 .transition(.move(edge: .bottom))
                 .animation(.spring(), value: selectedStation)
             }
+            // 🔹 Floating "My Location" button (bottom-right)
+            if selectedStation == nil {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Button(action: centerOnUser) {
+                            Image(systemName: "location.fill")
+                                .font(.title3)
+                                .foregroundColor(.lingr)
+                                .padding(10)
+                                .background(.thinMaterial)
+                                .clipShape(Circle())
+                                .shadow(radius: 4)
+                            
+                            
+                        }
+                        .padding(.trailing, 20)
+                        // move it a bit higher when bottom bar is showing
+                        .padding(.bottom, routeStations.isEmpty ? 40 : 110)
+                    }
+                }
+            }
         }
+
+
         .sheet(isPresented: $showSearchSheet) {
             SearchSheet(
                 stations: stations,
@@ -517,7 +544,65 @@ struct ContentView: View {
         let steps = max(routeStations.count - 1, 1)
         return Double(minIndex) / Double(steps)
     }
-    
+    // ترجع إحداثيات المسار الرمادي بحيث يمشي على نفس خط المترو
+    func routePolylineCoordinates() -> [CLLocationCoordinate2D]? {
+        guard routeStations.count >= 2 else { return nil }
+        
+        // نفترض أن الرحلة كلها على نفس الخط (نقدر نطوّرها لاحقًا للخطوط المتعددة)
+        guard let first = routeStations.first,
+              let line = lines.first(where: { $0.name == first.metrolinename }) else {
+            // لو ما لقينا الخط، نرجع نفس طريقة المحطات القديمة
+            return routeStations.map { $0.coordinate }
+        }
+        
+        let lineCoords = line.coordinates
+        
+        // نجيب أقرب نقطة على الـ geojson لبداية ونهاية الرحلة
+        guard let startIndex = closestIndex(on: lineCoords, to: first.coordinate),
+              let last = routeStations.last,
+              let endIndex   = closestIndex(on: lineCoords, to: last.coordinate) else {
+            return routeStations.map { $0.coordinate }
+        }
+        
+        if startIndex <= endIndex {
+            return Array(lineCoords[startIndex...endIndex])
+        } else {
+            // لو الاتجاه عكسي، نعكسه
+            return Array(lineCoords[endIndex...startIndex].reversed())
+        }
+    }
+
+    // تبحث عن أقرب إحداثية داخل coordinates لنقطة معيّنة
+    func closestIndex(on coords: [CLLocationCoordinate2D],
+                      to target: CLLocationCoordinate2D) -> Int? {
+        guard !coords.isEmpty else { return nil }
+        
+        let targetLoc = CLLocation(latitude: target.latitude, longitude: target.longitude)
+        var bestIndex = 0
+        var bestDistance = CLLocationDistance.greatestFiniteMagnitude
+        
+        for (i, c) in coords.enumerated() {
+            let loc = CLLocation(latitude: c.latitude, longitude: c.longitude)
+            let d = targetLoc.distance(from: loc)
+            if d < bestDistance {
+                bestDistance = d
+                bestIndex = i
+            }
+        }
+        return bestIndex
+    }
+
+    func centerOnUser() {
+        if let coord = locationManager.userLocation {
+            cameraPosition = .region(
+                MKCoordinateRegion(
+                    center: coord,
+                    span: MKCoordinateSpan(latitudeDelta: 0.03, longitudeDelta: 0.03)
+                )
+            )
+        }
+    }
+
     func loadMetroData() {
         Task {
             await loadStationsFromAPI()
@@ -681,7 +766,7 @@ struct SearchSheet: View {
         NavigationView {
             VStack(spacing: 0) {
                 ZStack {
-                    (selectedLine != nil ? lineColorForCode(selectedLine!) : Color(hex: "#BAC5A5"))
+                    (selectedLine != nil ? lineColorForCode(selectedLine!) :Color(hex: "#C8E3C4"))
                     HStack {
                         Spacer()
                         Text(selectedLineName)
@@ -846,38 +931,55 @@ struct StationCard: View {
     let station: MetroStation
     let onClose: () -> Void
     let onSetAsDestination: () -> Void
-    
+
     var body: some View {
         VStack(alignment: .trailing, spacing: 12) {
-            HStack(alignment: .top) {
+
+            // العنوان + زر الإغلاق
+            HStack(alignment: .top, spacing: 8) {
+
+                // ◀️ زر الإغلاق الآن على اليسار
                 Button(action: onClose) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(.white)
-                        .frame(width: 26, height: 26)
-                        .background(Color.black.opacity(0.35))
-                        .clipShape(Circle())
+                    ZStack {
+                        Circle()
+                            .fill(Color.red)
+                            .frame(width: 28, height: 28)
+                            .shadow(color: .red.opacity(0.3), radius: 4, y: 2)
+
+                        Image(systemName: "xmark")
+                            .font(.system(size: 15, weight: .bold))  // أوضح قليلًا
+                            .foregroundColor(.white)
+                    }
                 }
+
                 Spacer()
+
+                // النص على اليمين
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(station.metrostationnamear)
                         .font(.headline)
+
                     Text(station.metrostationname)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
+                .environment(\.layoutDirection, .rightToLeft)
             }
-            
+
+            // سطر معلومات الخط + كود المحطة
             HStack(spacing: 8) {
                 HStack(spacing: 6) {
                     Circle()
                         .fill(lineColorForStation(station.metroline))
                         .frame(width: 10, height: 10)
-                    Text(station.metrolinename)
+                    Text(lineNameArabic(station.metroline))
                         .font(.footnote)
                         .foregroundColor(.secondary)
+
                 }
+
                 Spacer()
+
                 Text(station.metrostationcode)
                     .font(.caption)
                     .padding(.horizontal, 10)
@@ -885,7 +987,9 @@ struct StationCard: View {
                     .background(Color.gray.opacity(0.18))
                     .cornerRadius(6)
             }
-            
+            .environment(\.layoutDirection, .rightToLeft)
+
+            // زر تعيين كوجهة
             Button(action: onSetAsDestination) {
                 HStack(spacing: 6) {
                     Image(systemName: "mappin.and.ellipse")
@@ -896,17 +1000,18 @@ struct StationCard: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
                 .foregroundColor(.white)
-                .background(Color(hex: "#3A5C37"))
+                .background(Color(hex: "#43B649")) // نفس لون زر البحث
                 .clipShape(Capsule())
             }
+            .environment(\.layoutDirection, .rightToLeft)
         }
         .padding(16)
         .background(Color("grlback"))
         .cornerRadius(18)
         .shadow(radius: 10, y: 4)
-        .environment(\.layoutDirection, .rightToLeft)
+        .environment(\.layoutDirection, .leftToRight)
     }
-    
+
     func lineColorForStation(_ lineCode: String) -> Color {
         switch lineCode {
         case "Line1": return Color(hex: "#00ade5")
@@ -918,8 +1023,18 @@ struct StationCard: View {
         default: return .gray
         }
     }
+    func lineNameArabic(_ code: String) -> String {
+        switch code {
+        case "Line1": return "المسار الأزرق"
+        case "Line2": return "المسار الأحمر"
+        case "Line3": return "المسار البرتقالي"
+        case "Line4": return "المسار الأصفر"
+        case "Line5": return "المسار الأخضر"
+        case "Line6": return "المسار البنفسجي"
+        default: return "مسار غير معروف"
+        }
+    }
 }
-
 // MARK: - Route Summary Bar
 struct RouteSummaryBar: View {
     let origin: MetroStation
@@ -927,37 +1042,54 @@ struct RouteSummaryBar: View {
     let stopsCount: Int
     let accentColor: Color
     let onClear: () -> Void
-    
+
     var body: some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text("من: ").bold()
-                    Text(origin.metrostationnamear)
-                }
-                HStack {
-                    Text("إلى: ").bold()
-                    Text(destination.metrostationnamear)
-                }
+        HStack(spacing: 6) {
+
+            // Close Button
+            Button(action: onClear) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(width: 34, height: 34)
+                    .background(Color.red.opacity(0.9))
+                    .clipShape(Circle())
+            }
+
+            // TEXT (RTL text, but no RTL layout mirroring)
+            VStack(alignment: .leading, spacing: 2) {
+
+                Text("من: \(origin.metrostationnamear)   إلى: \(destination.metrostationnamear)")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .multilineTextAlignment(.leading)   // ← important
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
                 Text("عدد المحطات في الطريق: \(stopsCount)")
                     .font(.caption)
                     .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .environment(\.layoutDirection, .rightToLeft) // RTL TEXT ONLY
+
             Spacer()
-            Button(action: { onClear() }) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(.white)
-                    .frame(width: 32, height: 32)
-                    .background(Color.red)
-                    .clipShape(Circle())
-            }
         }
-        .padding(12)
-        .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(.ultraThinMaterial))
-        .shadow(radius: 4, y: 2)
+        // 🚨 KEEP THE WHOLE BAR LTR TO PREVENT MIRROR SPACING
+        .environment(\.layoutDirection, .leftToRight)
+        .padding(.vertical, 14)
+        .padding(.horizontal, 18)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .shadow(color: .black.opacity(0.15), radius: 6, y: 3)
+        )
     }
 }
+
+
 
 // MARK: - Compact Upcoming Banner
 struct CompactUpcomingBanner: View {
@@ -1005,104 +1137,98 @@ struct CompactUpcomingBanner: View {
     }
     
     var body: some View {
-        VStack(alignment: .trailing, spacing: 8) {
+        VStack(alignment: .trailing, spacing: 10) {
+            
+            // TOP TEXT – pinned to the right like RouteSummaryBar
             VStack(alignment: .trailing, spacing: 2) {
                 Text("متبقي \(remainingStops) محطات")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                if let next = nextStation {
-                    Text("المحطة التالية: \(next.metrostationnamear)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                } else {
-                    Text("المحطة التالية: -")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+                    .font(.headline)
+                
+                Text("المحطة التالية: \(nextStation?.metrostationnamear ?? "-")")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
             .multilineTextAlignment(.trailing)
+            .environment(\.layoutDirection, .rightToLeft)              // RTL for text only
+            .frame(maxWidth: .infinity, alignment: .trailing)          // ⬅️ push to right edge of card
             
+            // PROGRESS BAR
             GeometryReader { geo in
                 let trackY = geo.size.height / 2
-                let startX: CGFloat = 24
-                let endX: CGFloat = geo.size.width - 24
-                let travelWidth = endX - startX
+                
+                // RIGHT-TO-LEFT PROGRESS BAR
+                let startX: CGFloat = geo.size.width - 30     // start on the RIGHT
+                let endX: CGFloat = 30                        // end on the LEFT
+                
+                let travelWidth = startX - endX
                 let clampedProgress = min(max(progress, 0), 1)
-                let trainX = startX + travelWidth * clampedProgress
+                let trainX = startX - travelWidth * clampedProgress   // move RIGHT → LEFT
                 
                 ZStack(alignment: .leading) {
+                    
+                    // Track background (RTL)
                     Path { path in
                         path.move(to: CGPoint(x: startX, y: trackY))
                         path.addLine(to: CGPoint(x: endX, y: trackY))
                     }
-                    .stroke(Color.gray.opacity(0.3), lineWidth: 6)
+                    .stroke(Color.gray.opacity(0.25), lineWidth: 6)
                     
+                    // Filled track (RTL)
                     Path { path in
                         path.move(to: CGPoint(x: startX, y: trackY))
                         path.addLine(to: CGPoint(x: trainX, y: trackY))
                     }
-                    .stroke(currentLineColor, lineWidth: 6)
+                    .stroke(currentLineColor, style: StrokeStyle(lineWidth: 6, lineCap: .round))
                     
+                    // Stops (mirror layout)
                     HStack(spacing: 0) {
-                        ForEach(Array(stopsToShow.enumerated()), id: \.element.id) { index, stop in
-                            stopView(stop: stop)
-                            if index < stopsToShow.count - 1 {
+                        ForEach(stopsToShow.indices.reversed(), id: \.self) { index in
+                            stopView(stop: stopsToShow[index])
+                            if index != 0 {
                                 Spacer()
                             }
                         }
                     }
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, 30)
                     
+                    // Train Icon (RTL position)
                     ZStack {
                         Circle()
-                            .fill(Color.white)
+                            .fill(.white)
                             .frame(width: 26, height: 26)
-                            .shadow(color: .black.opacity(0.2), radius: 3)
+                            .shadow(color: .black.opacity(0.15), radius: 3)
+                        
                         Image(systemName: "tram.fill")
-                            .font(.system(size: 14, weight: .bold))
+                            .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(currentLineColor)
                     }
                     .position(x: trainX, y: trackY)
                 }
             }
-            .frame(height: 50)
+            .frame(height: 45)
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 14)
+        .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color(hex: "#BAC5A5"))
-                .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 3)
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .shadow(color: .black.opacity(0.12), radius: 8, y: 3)
         )
-        .environment(\.layoutDirection, .rightToLeft)
+        .padding(.horizontal, 12)
+        .environment(\.layoutDirection, .leftToRight)                  // ⬅️ keep card layout LTR
     }
     
     @ViewBuilder
     private func stopView(stop: SimpleStop) -> some View {
-        if stop.isInterchange, stop.multiLineCodes.count >= 2 {
-            let colors = stop.multiLineCodes.map { lineColorForCode($0) }
-            Capsule()
-                .fill(Color.white)
-                .frame(width: 24, height: 16)
-                .overlay(
-                    Capsule()
-                        .stroke(
-                            LinearGradient(
-                                colors: colors,
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            ),
-                            lineWidth: 3
-                        )
-                )
-                .shadow(color: .black.opacity(0.1), radius: 2)
-        } else {
-            Circle()
-                .fill(lineColorForCode(stop.lineCode))
-                .frame(width: 18, height: 18)
-                .overlay(Circle().stroke(Color.white, lineWidth: 2.5))
-                .shadow(color: .black.opacity(0.15), radius: 2)
-        }
+        let color = lineColorForCode(stop.lineCode)
+        
+        Circle()
+            .fill(.white)
+            .frame(width: 16, height: 16)
+            .overlay(
+                Circle()
+                    .stroke(color, lineWidth: 4)
+            )
+            .shadow(color: .black.opacity(0.1), radius: 1)
     }
     
     private func lineColorForCode(_ code: String) -> Color {
@@ -1117,6 +1243,7 @@ struct CompactUpcomingBanner: View {
         }
     }
 }
+
 
 // MARK: - Color Extension
 extension Color {
