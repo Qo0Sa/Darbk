@@ -13,7 +13,7 @@
 import SwiftUI
 import MapKit
 
-struct ConteView: View {
+struct ContentView: View {
     @State private var viewModel = MapViewModel()
     @State private var locationManager = LocationManager()
     @State private var showSearchSheet = false
@@ -120,7 +120,7 @@ struct ConteView: View {
             
             HStack(spacing: 8) {
                 Spacer()
-                favoriteStationsView
+              //  favoriteStationsView
                 searchButton
             }
             
@@ -281,5 +281,5 @@ struct ConteView: View {
 }
 
 #Preview {
-    ConteView()
+    ContentView()
 }

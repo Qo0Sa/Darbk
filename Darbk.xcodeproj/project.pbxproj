@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		365A45A82ED601B10006D8BD /* Darbk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Darbk.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		36E6C80C2EEB038800BB703C /* Darbk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Darbk.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -46,16 +46,8 @@
 			isa = PBXGroup;
 			children = (
 				365A45AA2ED601B10006D8BD /* Darbk */,
-				365A45A92ED601B10006D8BD /* Products */,
+				36E6C80C2EEB038800BB703C /* Darbk.app */,
 			);
-			sourceTree = "<group>";
-		};
-		365A45A92ED601B10006D8BD /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				365A45A82ED601B10006D8BD /* Darbk.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -80,7 +72,7 @@
 			packageProductDependencies = (
 			);
 			productName = Darbk;
-			productReference = 365A45A82ED601B10006D8BD /* Darbk.app */;
+			productReference = 36E6C80C2EEB038800BB703C /* Darbk.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -108,7 +100,7 @@
 			mainGroup = 365A459F2ED601B10006D8BD;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 365A45A92ED601B10006D8BD /* Products */;
+			productRefGroup = 365A459F2ED601B10006D8BD;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
