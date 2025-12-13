@@ -69,17 +69,18 @@ class MapViewModel {
         }
     }
     
+    
     @MainActor
     private func loadStations() async {
-        let urlString = "https://opendata.rcrc.gov.sa/api/explore/v2.1/catalog/datasets/metro-stations-in-riyadh-by-metro-line-and-station-type-2024/records?limit=-1"
-        guard let url = URL(string: urlString) else {
-            errorMessage = "رابط غير صحيح"
+        // ✅ نقرأ من الملف المحلي بدل API
+        guard let url = Bundle.main.url(forResource: "metro-stations", withExtension: "json"),
+              let data = try? Data(contentsOf: url) else {
+            errorMessage = "فشل تحميل ملف المحطات"
             isLoading = false
             return
         }
         
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
             let response = try JSONDecoder().decode(StationsAPIResponse.self, from: data)
             stations = response.results
             buildGraph()
@@ -96,10 +97,13 @@ class MapViewModel {
             }
             isLoading = false
         } catch {
-            errorMessage = "فشل تحميل المحطات\n\(error.localizedDescription)"
+            errorMessage = "فشل قراءة بيانات المحطات\n\(error.localizedDescription)"
             isLoading = false
         }
     }
+    
+    
+    
     
     @MainActor
     private func loadLines() async {

@@ -1,15 +1,3 @@
-//
-//   RouteSummaryBar.swift
-//  Darbk
-//
-//  Created by Sarah on 20/06/1447 AH.
-//
-
-//
-//  RouteSummaryBar.swift
-//  Darbk
-//
-
 import SwiftUI
 
 struct RouteSummaryBar: View {
@@ -20,40 +8,112 @@ struct RouteSummaryBar: View {
     let onClear: () -> Void
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 14) {
+            // زر الإغلاق
             Button(action: onClear) {
                 Image(systemName: "xmark")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundColor(.white)
-                    .frame(width: 34, height: 34)
-                    .background(Color.red.opacity(0.9))
+                    .frame(width: 40, height: 40)
+                    .background(
+                        LinearGradient(
+                            colors: [.red, .red.opacity(0.8)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
                     .clipShape(Circle())
+                    .shadow(color: .red.opacity(0.4), radius: 4, y: 2)
             }
             
-            VStack(alignment: .leading, spacing: 2) {
-                Text("من: \(origin.metrostationnamear)   إلى: \(destination.metrostationnamear)")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+            // معلومات الرحلة
+            VStack(spacing: 12) {
+                // محطة البداية
+                HStack(spacing: 10) {
+                    Spacer()
+                    
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text("من")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Text(origin.metrostationnamear)
+                            .font(.body)
+                            .fontWeight(.bold)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                    }
+                    
+                    Circle()
+                        .fill(Color.lineColor(for: origin.metroline))
+                        .frame(width: 16, height: 16)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.white, lineWidth: 3)
+                        )
+                        .shadow(color: Color.lineColor(for: origin.metroline).opacity(0.4), radius: 3)
+                }
                 
-               
+//                // الخط الفاصل مع عدد المحطات
+//                HStack(spacing: 8) {
+//                    Spacer()
+//                    
+//                    Text("\(stopsCount) محطة")
+//                        .font(.caption)
+//                        .fontWeight(.semibold)
+//                        .foregroundColor(.white)
+//                        .padding(.horizontal, 12)
+//                        .padding(.vertical, 4)
+//                        .background(
+//                            Capsule()
+//                                .fill(Color.secondary.opacity(0.7))
+//                        )
+//                    
+//                    Image(systemName: "arrow.down")
+//                        .font(.system(size: 14, weight: .bold))
+//                        .foregroundColor(.secondary)
+//                }
                 
+                // محطة الوجهة
+                HStack(spacing: 10) {
+                    Spacer()
+                    
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text("إلى")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Text(destination.metrostationnamear)
+                            .font(.body)
+                            .fontWeight(.bold)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                    }
+                    
+                    ZStack {
+                        Circle()
+                            .fill(Color.lineColor(for: destination.metroline))
+                            .frame(width: 20, height: 20)
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.white, lineWidth: 3)
+                            )
+                            .shadow(color: Color.lineColor(for: destination.metroline).opacity(0.4), radius: 3)
+                        
+                        Image(systemName: "mappin.circle.fill")
+                            .font(.system(size: 10))
+                            .foregroundColor(.white)
+                    }
+                }
             }
-            .environment(\.layoutDirection, .rightToLeft)
-            
-            Spacer()
+            .frame(maxWidth: .infinity)
+            //.environment(\.layoutDirection, .rightToLeft)
         }
-        .environment(\.layoutDirection, .leftToRight)
-        .padding(.vertical, 14)
-        .padding(.horizontal, 18)
+        .padding(.vertical, 16)
+        .padding(.horizontal, 16)
         .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.15), radius: 6, y: 3)
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(Color.grlback)
         )
+
+
     }
 }
-

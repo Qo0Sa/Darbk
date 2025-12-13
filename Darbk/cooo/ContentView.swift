@@ -112,9 +112,9 @@ struct ContentView: View {
                 CompactUpcomingBanner(
                     routeStations: viewModel.routeStations,
                     allStations: viewModel.stations,
-                    progress: viewModel.routeProgress(userLocation: locationManager.userLocation)
-                )
-                .padding(.horizontal, 16)
+                    progress: viewModel.routeProgress(userLocation: locationManager.userLocation),
+                    userLocation: locationManager.userLocation  // ← السطر الجديد
+                )                .padding(.horizontal, 16)
                 .transition(.move(edge: .top))
             }
             
@@ -139,11 +139,12 @@ struct ContentView: View {
                 )
                 .padding(.horizontal, 16)
                 .padding(.bottom, 24)
-                .transition(.move(edge: .bottom))
+               .transition(.move(edge: .bottom))
             }
         }
     }
     
+    // MARK: - Favorite Stations
     // MARK: - Favorite Stations
     private var favoriteStationsView: some View {
         Group {
@@ -153,9 +154,13 @@ struct ContentView: View {
                         ForEach(viewModel.stations.filter { viewModel.favoriteStations.contains($0.metrostationcode) }) { station in
                             Button(action: { viewModel.selectStation(station) }) {
                                 HStack(spacing: 6) {
-                                    Circle()
-                                        .fill(Color.lineColor(for: station.metroline))
-                                        .frame(width: 8, height: 8)
+                                    // ⭐ النجمة
+                                    Image(systemName: "star.fill")
+                                        .font(.title3)
+                                        .foregroundColor(Color.lineColor(for: station.metroline))
+                                    
+                                 
+                                    // 📝 النص
                                     Text(station.metrostationnamear)
                                         .font(.subheadline)
                                         .fontWeight(.semibold)
@@ -165,8 +170,12 @@ struct ContentView: View {
                                 .padding(.vertical, 10)
                                 .background(
                                     Capsule()
-                                        .fill(Color.lineColor(for: station.metroline))
-                                        .shadow(color: Color.lineColor(for: station.metroline).opacity(0.4), radius: 4, y: 2)
+                                        .fill(Color.grlb)  // ← خلفية خضراء فاتحة
+                                        .overlay(
+                                            Capsule()
+                                                .stroke(Color.lineColor(for: station.metroline), lineWidth: 2)  // ← border بلون المسار
+                                        )
+                                        .shadow(color: Color.lineColor(for: station.metroline).opacity(0.2), radius: 4, y: 2)
                                 )
                             }
                         }
@@ -185,7 +194,7 @@ struct ContentView: View {
                 Button(action: { showSearchSheet = true }) {
                     Image(systemName: "magnifyingglass")
                         .font(.title2)
-                        .foregroundColor(.white)
+                        .foregroundColor(.lingr)
                         .padding(14)
                         .background(.grd)
                         .clipShape(Circle())
@@ -254,7 +263,7 @@ struct ContentView: View {
     // MARK: - Location Button
     private var locationButton: some View {
         Group {
-            if viewModel.selectedStation == nil {
+            if viewModel.selectedStation == nil && viewModel.routeStations.isEmpty  {
                 VStack {
                     Spacer()
                     HStack {

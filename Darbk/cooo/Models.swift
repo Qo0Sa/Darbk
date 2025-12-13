@@ -137,15 +137,16 @@ struct MetroGraph {
     }
 }
 
+
 // MARK: - Simple Stop
 struct SimpleStop: Identifiable {
     let id = UUID()
     let nameAr: String
     let lineCode: String
     let multiLineCodes: [String]
-    var isInterchange: Bool { multiLineCodes.count > 1 }
-
+    let stationNumber: Int  // ← الرقم الحقيقي للمحطة
     
+    var isInterchange: Bool { multiLineCodes.count > 1 }
 }
 
 // MARK: - Color Extension

@@ -1,10 +1,3 @@
-//
-//  LogoSplash.swift
-//  Darbk
-//
-//  Created by Sarah on 19/06/1447 AH.
-//
-
 import SwiftUI
 
 struct LogoSplashView: View {
@@ -14,7 +7,7 @@ struct LogoSplashView: View {
     @State private var logoOffsetY: CGFloat = 30
     
     // القطار
-    @State private var trainProgress: CGFloat = 0.0   // 0 → بداية الخط ، 1 → نهايته
+    @State private var trainProgress: CGFloat = 0.0
     @State private var showTrainLine: Bool = true
     
     @State private var isActive: Bool = false
@@ -56,37 +49,38 @@ struct LogoSplashView: View {
     }
     
     private func startAnimation() {
-        // 1) القطار يمشي من اليسار لليمين
-        withAnimation(.easeInOut(duration: 1.6)) {
+        // 1) القطار يمشي من اليسار لليمين (أسرع)
+        withAnimation(.easeInOut(duration: 1.0)) {  // ← كان 1.6، صار 1.0
             trainProgress = 1.0
         }
         
-        // 2) بعد ما يخلص → نخفي القطار ونطلع اللوقو
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
-            withAnimation(.easeOut(duration: 0.3)) {
+        // 2) بعد ما يخلص → نخفي القطار ونطلع اللوقو (أسرع)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {  // ← كان 1.6، صار 1.0
+            withAnimation(.easeOut(duration: 0.2)) {  // ← كان 0.3، صار 0.2
                 showTrainLine = false
             }
             
-            withAnimation(.easeIn(duration: 1.0)) {
+            withAnimation(.easeIn(duration: 0.6)) {  // ← كان 1.0، صار 0.6
                 logoOpacity = 1.0
                 logoScale   = 1.0
                 logoOffsetY = 0
             }
             
-            // حركة خفيفة فوق/تحت
-            withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
+            // حركة خفيفة فوق/تحت (أسرع)
+            withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {  // ← كان 1.2، صار 1.0
                 logoOffsetY = -8
             }
         }
         
-        // 3) بعد شوي نروح للتطبيق
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+        // 3) نروح للتطبيق (أسرع بكثير)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {  // ← كان 3.0، صار 2.0
             isActive = true
         }
     }
 }
+
 struct TrainLineWithTrainIcon: View {
-    let progress: CGFloat   // من 0 إلى 1
+    let progress: CGFloat
     
     var body: some View {
         GeometryReader { geo in
@@ -99,9 +93,8 @@ struct TrainLineWithTrainIcon: View {
             let travel = endX - startX
             let clamped = min(max(progress, 0), 1)
             let trainX = startX + travel * clamped
+            
             ZStack {
-                Spacer()
-
                 // السكة (خط مستقيم)
                 Path { path in
                     path.move(to: CGPoint(x: startX, y: y))
@@ -117,10 +110,10 @@ struct TrainLineWithTrainIcon: View {
                     .position(x: trainX, y: y - 16)
             }
         }
-        .frame(height: 100) // هذا السطر بس المضاف
-        
+        .frame(height: 100)
     }
 }
+
 #Preview {
     LogoSplashView()
 }

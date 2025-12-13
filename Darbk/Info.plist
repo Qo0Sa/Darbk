@@ -10,17 +10,11 @@
 </key>
 	<string>نحتاج موقعك لعرض موقعك على الخريطة
 </string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>التطبيق يحتاج يوصل للموقع عشان يحدد اللوجهه</string>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string></string>
-	</array>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>نحتاج موقعك لإظهار أقرب محطة</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UIApplicationSupportsTabbedSceneCollection</key>
 		<false/>
 		<key>UISceneConfigurations</key>
 		<dict/>

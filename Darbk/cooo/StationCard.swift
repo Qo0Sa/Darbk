@@ -74,14 +74,14 @@ struct StationCard: View {
                 .fontWeight(.semibold)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
-                .foregroundColor(.white)
+                .foregroundColor(.lingr)
                 .background(.grd)
                 .clipShape(Capsule())
             }
             .environment(\.layoutDirection, .rightToLeft)
         }
         .padding(16)
-        .background(Color("grlback"))
+        .background(.grlback)
         .cornerRadius(18)
         .shadow(radius: 10, y: 4)
         .environment(\.layoutDirection, .leftToRight)
