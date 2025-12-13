@@ -22,7 +22,7 @@ struct ContentView: View {
         ZStack {
             mapView
             overlayContent
-            loadingAndErrorView
+          //  loadingAndErrorView
             stationCardView
             locationButton
         }
@@ -200,44 +200,46 @@ struct ContentView: View {
                         .clipShape(Circle())
                         .shadow(color: Color.grd.opacity(0.5), radius: 8, y: 4)
                 }
-                .padding()
+               
+                .padding(.trailing, 16)  // ← بس من اليمين
+                .padding(.top, 10)        // ← شوي من فوق
             }
         }
     }
     
-    // MARK: - Loading & Error
-    private var loadingAndErrorView: some View {
-        Group {
-            if viewModel.isLoading {
-                VStack(spacing: 16) {
-                    ProgressView().scaleEffect(1.5)
-                    Text("جاري تحميل بيانات المترو...").font(.headline)
-                }
-                .padding(32)
-                .background(.ultraThinMaterial)
-                .cornerRadius(16)
-            }
-            
-            if let error = viewModel.errorMessage {
-                VStack(spacing: 16) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 40))
-                        .foregroundColor(.orange)
-                    Text(error).font(.headline).multilineTextAlignment(.center)
-                    Button("إعادة المحاولة") {
-                        viewModel.errorMessage = nil
-                        viewModel.isLoading = true
-                        viewModel.loadMetroData()
-                    }
-                    .buttonStyle(.borderedProminent)
-                }
-                .padding(32)
-                .background(.ultraThinMaterial)
-                .cornerRadius(16)
-            }
-        }
-    }
-    
+//    // MARK: - Loading & Error
+//    private var loadingAndErrorView: some View {
+//        Group {
+//            if viewModel.isLoading {
+//                VStack(spacing: 16) {
+//                    ProgressView().scaleEffect(1.5)
+//                    Text("جاري تحميل بيانات المترو...").font(.headline)
+//                }
+//                .padding(32)
+//                .background(.ultraThinMaterial)
+//                .cornerRadius(16)
+//            }
+//            
+//            if let error = viewModel.errorMessage {
+//                VStack(spacing: 16) {
+//                    Image(systemName: "exclamationmark.triangle.fill")
+//                        .font(.system(size: 40))
+//                        .foregroundColor(.orange)
+//                    Text(error).font(.headline).multilineTextAlignment(.center)
+//                    Button("إعادة المحاولة") {
+//                        viewModel.errorMessage = nil
+//                        viewModel.isLoading = true
+//                        viewModel.loadMetroData()
+//                    }
+//                    .buttonStyle(.borderedProminent)
+//                }
+//                .padding(32)
+//                .background(.ultraThinMaterial)
+//                .cornerRadius(16)
+//            }
+//        }
+//    }
+//    
     // MARK: - Station Card
     private var stationCardView: some View {
         Group {
