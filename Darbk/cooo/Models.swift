@@ -144,6 +144,8 @@ struct SimpleStop: Identifiable {
     let lineCode: String
     let multiLineCodes: [String]
     var isInterchange: Bool { multiLineCodes.count > 1 }
+
+    
 }
 
 // MARK: - Color Extension

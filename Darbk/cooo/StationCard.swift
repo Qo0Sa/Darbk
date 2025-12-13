@@ -75,7 +75,7 @@ struct StationCard: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
                 .foregroundColor(.white)
-                .background(Color(hex: "#43B649"))
+                .background(.grd)
                 .clipShape(Capsule())
             }
             .environment(\.layoutDirection, .rightToLeft)

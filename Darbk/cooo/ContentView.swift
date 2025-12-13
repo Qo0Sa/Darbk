@@ -118,12 +118,13 @@ struct ContentView: View {
                 .transition(.move(edge: .top))
             }
             
-            HStack(spacing: 8) {
-                Spacer()
-              //  favoriteStationsView
-                searchButton
+            if viewModel.selectedStation == nil && viewModel.destinationStation == nil{
+                HStack(spacing: 8) {
+                    Spacer()
+                    favoriteStationsView
+                    searchButton
+                }
             }
-            
             Spacer()
             
             if let origin = viewModel.originStation,
@@ -186,9 +187,9 @@ struct ContentView: View {
                         .font(.title2)
                         .foregroundColor(.white)
                         .padding(14)
-                        .background(Color.lineColor(for: "Line5"))
+                        .background(.grd)
                         .clipShape(Circle())
-                        .shadow(color: Color.lineColor(for: "Line5").opacity(0.5), radius: 8, y: 4)
+                        .shadow(color: Color.grd.opacity(0.5), radius: 8, y: 4)
                 }
                 .padding()
             }

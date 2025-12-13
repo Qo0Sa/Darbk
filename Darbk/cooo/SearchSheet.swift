@@ -68,7 +68,7 @@ struct SearchSheet: View {
     
     private var headerView: some View {
         ZStack {
-            (selectedLine != nil ? Color.lineColor(for: selectedLine!) : Color(hex: "#C8E3C4"))
+            (selectedLine != nil ? Color.lineColor(for: selectedLine!) : Color.grd)
             HStack {
                 Spacer()
                 Text(selectedLineName)
@@ -205,7 +205,7 @@ struct SearchSheet: View {
                 }) {
                     Image(systemName: favoriteStations.contains(station.metrostationcode) ? "star.fill" : "star")
                         .font(.title3)
-                        .foregroundColor(favoriteStations.contains(station.metrostationcode) ? .yellow : .gray)
+                        .foregroundColor(favoriteStations.contains(station.metrostationcode) ? .lingr : .grd)
                 }
                 .padding(.trailing, 16)
                 .buttonStyle(.plain)

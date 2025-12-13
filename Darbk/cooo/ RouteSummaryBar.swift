@@ -39,11 +39,8 @@ struct RouteSummaryBar: View {
                     .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
-                Text("عدد المحطات في الطريق: \(stopsCount)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+               
+                
             }
             .environment(\.layoutDirection, .rightToLeft)
             
@@ -59,3 +56,4 @@ struct RouteSummaryBar: View {
         )
     }
 }
+

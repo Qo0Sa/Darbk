@@ -2,12 +2,6 @@
 //  ViewModels.swift
 //  Darbk
 //
-//  Created by Sarah on 20/06/1447 AH.
-//
-//
-//  ViewModels.swift
-//  Darbk
-//
 
 import Foundation
 import SwiftUI
@@ -161,10 +155,56 @@ class MapViewModel {
         var numbering: [String: Int] = [:]
         let groupedByLine = Dictionary(grouping: stations, by: { $0.metroline })
         
-        for (_, lineStations) in groupedByLine {
-            let sorted = lineStations.sorted { $0.stationseq < $1.stationseq }
-            for (index, station) in sorted.enumerated() {
-                numbering[station.metrostationcode] = 11 + index
+        for (line, lineStations) in groupedByLine {
+            if line == "Line5" {
+                // نرتب المحطات حسب stationseq الأصلي
+                let sorted = lineStations.sorted { $0.stationseq < $1.stationseq }
+                
+                // نلاقي محطة وزارة التعليم
+                guard let moEIndex = sorted.firstIndex(where: {
+                    $0.metrostationnamear.contains("وزارة التعليم")
+                }) else {
+                    // لو ما لقيناها، نرتب عادي
+                    for (index, station) in sorted.enumerated() {
+                        numbering[station.metrostationcode] = 11 + index
+                    }
+                    continue
+                }
+                
+                // نلاقي محطة المتحف الوطني
+                guard let museumIndex = sorted.firstIndex(where: {
+                    $0.metrostationnamear.contains("المتحف الوطني") ||
+                    $0.metrostationnamear.contains("المتحف")
+                }) else {
+                    // لو ما لقيناها، نرتب من وزارة التعليم للآخر فقط
+                    let reordered = Array(sorted[moEIndex...]) + Array(sorted[..<moEIndex])
+                    for (index, station) in reordered.enumerated() {
+                        numbering[station.metrostationcode] = 11 + index
+                    }
+                    continue
+                }
+                
+                // نرتب من وزارة التعليم إلى المتحف الوطني
+                var reordered: [MetroStation] = []
+                
+                if moEIndex <= museumIndex {
+                    // الترتيب الطبيعي: من وزارة التعليم للمتحف
+                    reordered = Array(sorted[moEIndex...museumIndex])
+                } else {
+                    // لو وزارة التعليم بعد المتحف في الترتيب الأصلي
+                    // نمشي من وزارة التعليم للآخر ثم من الأول للمتحف
+                    reordered = Array(sorted[moEIndex...]) + Array(sorted[...museumIndex])
+                }
+                
+                for (index, station) in reordered.enumerated() {
+                    numbering[station.metrostationcode] = 11 + index
+                }
+            } else {
+                // باقي الخطوط عادي
+                let sorted = lineStations.sorted { $0.stationseq < $1.stationseq }
+                for (index, station) in sorted.enumerated() {
+                    numbering[station.metrostationcode] = 11 + index
+                }
             }
         }
         stationNumbering = numbering
