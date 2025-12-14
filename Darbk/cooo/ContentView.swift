@@ -12,6 +12,7 @@ struct ContentView: View {
     @State private var viewModel = MapViewModel()
     @State private var locationManager = LocationManager()
     @State private var showSearchSheet = false
+    @StateObject private var simulator = LocationSimulator.shared
     
     var body: some View {
         ZStack {
@@ -19,9 +20,10 @@ struct ContentView: View {
             overlayContent
             stationCardView
             locationButton
-            
-            // ← هنا حطيت الأزرار ثابتة
             fixedTopButtons
+            
+            // لوحة التحكم بالمحاكاة (للتطوير فقط)
+            simulatorControlPanel
         }
         .sheet(isPresented: $showSearchSheet) {
             SearchSheet(
@@ -36,6 +38,7 @@ struct ContentView: View {
         .onAppear {
             locationManager.requestLocationPermission()
             viewModel.loadMetroData()
+            NotificationManager.shared.requestPermission()
         }
     }
     
@@ -126,7 +129,10 @@ struct ContentView: View {
                     destination: destination,
                     stopsCount: viewModel.routeStations.count,
                     accentColor: .black,
-                    onClear: viewModel.clearRoute
+                    onClear: {
+                        viewModel.clearRoute()
+                        simulator.stopSimulation()
+                    }
                 )
                 .padding(.horizontal, 16)
                 .padding(.bottom, 24)
@@ -198,6 +204,9 @@ struct ContentView: View {
                         onSetAsDestination: {
                             viewModel.setDestination(to: station, userLocation: locationManager.userLocation)
                             viewModel.selectedStation = nil
+                            
+                            // بدء المحاكاة تلقائياً بعد 5 ثواني
+                            simulator.setTargetStation(station, arrivalDelay: 5)
                         }
                     )
                     .padding()
@@ -237,7 +246,7 @@ struct ContentView: View {
         }
     }
     
-    // MARK: - Fixed Top Buttons (البحث + المفضلة)
+    // MARK: - Fixed Top Buttons
     private var fixedTopButtons: some View {
         Group {
             if viewModel.selectedStation == nil &&
@@ -248,12 +257,48 @@ struct ContentView: View {
                         favoriteStationsView
                         searchButton
                     }
-                    .padding(.top,0.1 )
+                    .padding(.top, 0.1)
                     .padding(.trailing, 16)
                     
                     Spacer()
                 }
             }
+        }
+    }
+    
+    // MARK: - Simulator Control Panel (للتطوير فقط)
+    private var simulatorControlPanel: some View {
+        VStack {
+            Spacer()
+            HStack {
+                if simulator.targetStation != nil || simulator.isSimulating {
+                    VStack(alignment: .leading, spacing: 4) {
+                        if let station = simulator.targetStation {
+                            Text(station.metrostationnamear)
+                                .font(.caption)
+                                .fontWeight(.bold)
+                        }
+                        Text(simulator.statusText)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        
+                        if simulator.targetStation != nil && !simulator.isSimulating {
+                            Button("إيقاف") {
+                                simulator.stopSimulation()
+                            }
+                            .font(.caption2)
+                            .foregroundColor(.red)
+                        }
+                    }
+                    .padding(8)
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(8)
+                    .shadow(radius: 4)
+                }
+                Spacer()
+            }
+            .padding(.leading, 16)
+            .padding(.bottom, 100)
         }
     }
 }

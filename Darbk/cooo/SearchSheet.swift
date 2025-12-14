@@ -110,18 +110,20 @@ struct SearchSheet: View {
     
     private var searchBar: some View {
         HStack {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.gray)
+            
+            TextField("ابحث عن محطة...", text: $searchText)
+                .textFieldStyle(.plain)
+                .frame(maxWidth: .infinity, alignment: .trailing) // ← هذا
+            
             if !searchText.isEmpty {
                 Button(action: { searchText = "" }) {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.gray)
                 }
             }
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.gray)
-            TextField("ابحث عن محطة...", text: $searchText)
-                .textFieldStyle(.plain)
         }
-        .environment(\.layoutDirection, .rightToLeft)
         .padding()
         .background(Color(.grlb))
         .cornerRadius(10)

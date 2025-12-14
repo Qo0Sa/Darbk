@@ -9,7 +9,8 @@ struct CompactUpcomingBanner: View {
     
     @State private var hasArrived = false
     @State private var showCelebration = false
-    @State private var hasNotified = false // لمنع إرسال الإشعار أكثر من مرة
+    @State private var hasNotified = false
+    @StateObject private var simulator = LocationSimulator.shared
     
     // حساب عدد المحطات المتبقية بدقة
     private var remainingStops: Int {
@@ -96,7 +97,10 @@ struct CompactUpcomingBanner: View {
     
     // حساب المسافة بين المستخدم والوجهة
     private var distanceToDestination: CLLocationDistance? {
-        guard let userCoord = userLocation,
+        // استخدام الموقع المحاكي أو الحقيقي
+        let currentLocation = simulator.getLocation(realLocation: userLocation)
+        
+        guard let userCoord = currentLocation,
               let destination = destinationStation else {
             return nil
         }
@@ -110,7 +114,7 @@ struct CompactUpcomingBanner: View {
     // تحقق من الوصول (أقل من 100 متر)
     private var isUserAtDestination: Bool {
         guard let distance = distanceToDestination else { return false }
-        return distance < 100 // 100 متر
+        return distance < 100
     }
     
     var body: some View {
@@ -177,7 +181,7 @@ struct CompactUpcomingBanner: View {
             .multilineTextAlignment(.trailing)
             .environment(\.layoutDirection, .rightToLeft)
             .frame(maxWidth: .infinity, alignment: .trailing)
-
+            
             GeometryReader { geo in
                 let trackY = geo.size.height / 2
                 let startX: CGFloat = geo.size.width - 30
@@ -228,8 +232,6 @@ struct CompactUpcomingBanner: View {
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(Color.grlback)
-                .stroke(Color.lingr.opacity(0.25), lineWidth: 1)
-
         )
         .padding(.horizontal, 12)
         .environment(\.layoutDirection, .leftToRight)
@@ -287,9 +289,9 @@ struct CompactUpcomingBanner: View {
                 .fill(.grlback)
                 .overlay(
                     RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    //    .stroke(currentLineColor.opacity(0.3), lineWidth: 2)
+                        .stroke(currentLineColor.opacity(0.3), lineWidth: 2)
                 )
-             //  .shadow(color: currentLineColor.opacity(0.3), radius: 20, y: 10)
+                .shadow(color: currentLineColor.opacity(0.3), radius: 20, y: 10)
         )
         .padding(.horizontal, 12)
     }
