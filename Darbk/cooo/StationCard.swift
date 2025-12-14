@@ -80,10 +80,12 @@ struct StationCard: View {
             }
             .environment(\.layoutDirection, .rightToLeft)
         }
+        
         .padding(16)
         .background(.grlback)
         .cornerRadius(18)
         .shadow(radius: 10, y: 4)
+        
         .environment(\.layoutDirection, .leftToRight)
     }
 }

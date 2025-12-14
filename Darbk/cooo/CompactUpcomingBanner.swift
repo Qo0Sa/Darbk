@@ -9,6 +9,7 @@ struct CompactUpcomingBanner: View {
     
     @State private var hasArrived = false
     @State private var showCelebration = false
+    @State private var hasNotified = false // لمنع إرسال الإشعار أكثر من مرة
     
     // حساب عدد المحطات المتبقية بدقة
     private var remainingStops: Int {
@@ -129,6 +130,14 @@ struct CompactUpcomingBanner: View {
         }
         .onChange(of: isUserAtDestination) { oldValue, newValue in
             if newValue && !hasArrived {
+                // إرسال الإشعار والاهتزاز عند الوصول
+                if !hasNotified, let destination = destinationStation {
+                    NotificationManager.shared.sendArrivalNotification(
+                        stationName: destination.metrostationnamear
+                    )
+                    hasNotified = true
+                }
+                
                 withAnimation {
                     hasArrived = true
                 }
@@ -142,6 +151,8 @@ struct CompactUpcomingBanner: View {
                     showCelebration = false
                     hasArrived = false
                 }
+                // إعادة تعيين حالة الإشعار عند الابتعاد عن الوجهة
+                hasNotified = false
             }
         }
     }
@@ -166,7 +177,7 @@ struct CompactUpcomingBanner: View {
             .multilineTextAlignment(.trailing)
             .environment(\.layoutDirection, .rightToLeft)
             .frame(maxWidth: .infinity, alignment: .trailing)
-            
+
             GeometryReader { geo in
                 let trackY = geo.size.height / 2
                 let startX: CGFloat = geo.size.width - 30
@@ -217,6 +228,8 @@ struct CompactUpcomingBanner: View {
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(Color.grlback)
+                .stroke(Color.lingr.opacity(0.25), lineWidth: 1)
+
         )
         .padding(.horizontal, 12)
         .environment(\.layoutDirection, .leftToRight)
@@ -230,7 +243,7 @@ struct CompactUpcomingBanner: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [.green, .green.opacity(0.7)],
+                            colors: [.lingr, .lingr.opacity(0.7)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -240,26 +253,17 @@ struct CompactUpcomingBanner: View {
                 
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 50, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(.grlback)
                     .symbolEffect(.bounce, value: showCelebration)
             }
             
             // النص الرئيسي
             VStack(spacing: 8) {
-                Text("🎉 مبروك 🎉")
-                    .font(.title)
-                    .fontWeight(.black)
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [currentLineColor, currentLineColor.opacity(0.7)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                
-                Text("لقد وصلت إلى وجهتك")
+              
+                Text("🎉 لقد وصلت إلى وجهتك")
                     .font(.title2)
                     .fontWeight(.bold)
+                    
                 
                 if let destination = destinationStation {
                     Text(destination.metrostationnamear)
@@ -271,48 +275,7 @@ struct CompactUpcomingBanner: View {
             .multilineTextAlignment(.center)
             .environment(\.layoutDirection, .rightToLeft)
             
-            // معلومات الرحلة
-            HStack(spacing: 20) {
-                VStack(spacing: 4) {
-                    Text("\(routeStations.count)")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(currentLineColor)
-                    Text("محطة")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                Rectangle()
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 1, height: 40)
-                
-                VStack(spacing: 4) {
-                    Text("100%")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(currentLineColor)
-                    Text("مكتمل")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                Rectangle()
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 1, height: 40)
-                
-                VStack(spacing: 4) {
-                    Image(systemName: "checkmark.seal.fill")
-                        .font(.title)
-                        .foregroundColor(currentLineColor)
-                    Text("وصلت")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            }
-            .padding(.vertical, 12)
-            .environment(\.layoutDirection, .rightToLeft)
-            
+         
             Text("نتمنى لك رحلة سعيدة")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
@@ -321,19 +284,12 @@ struct CompactUpcomingBanner: View {
         .padding(24)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(.ultraThinMaterial)
+                .fill(.grlback)
                 .overlay(
                     RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .stroke(
-                            LinearGradient(
-                                colors: [currentLineColor.opacity(0.5), currentLineColor.opacity(0.2)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 2
-                        )
+                    //    .stroke(currentLineColor.opacity(0.3), lineWidth: 2)
                 )
-                .shadow(color: currentLineColor.opacity(0.3), radius: 20, y: 10)
+             //  .shadow(color: currentLineColor.opacity(0.3), radius: 20, y: 10)
         )
         .padding(.horizontal, 12)
     }

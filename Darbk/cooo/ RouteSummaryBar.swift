@@ -112,6 +112,8 @@ struct RouteSummaryBar: View {
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .fill(Color.grlback)
+                .stroke(Color.lingr.opacity(0.25), lineWidth: 1)
+
         )
 
 

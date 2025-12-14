@@ -5,11 +5,6 @@
 //  Created by Sarah on 20/06/1447 AH.
 //
 
-//
-//  ContentView.swift
-//  Darbk
-//
-
 import SwiftUI
 import MapKit
 
@@ -22,9 +17,11 @@ struct ContentView: View {
         ZStack {
             mapView
             overlayContent
-          //  loadingAndErrorView
             stationCardView
             locationButton
+            
+            // ← هنا حطيت الأزرار ثابتة
+            fixedTopButtons
         }
         .sheet(isPresented: $showSearchSheet) {
             SearchSheet(
@@ -113,18 +110,12 @@ struct ContentView: View {
                     routeStations: viewModel.routeStations,
                     allStations: viewModel.stations,
                     progress: viewModel.routeProgress(userLocation: locationManager.userLocation),
-                    userLocation: locationManager.userLocation  // ← السطر الجديد
-                )                .padding(.horizontal, 16)
+                    userLocation: locationManager.userLocation
+                )
+                .padding(.horizontal, 16)
                 .transition(.move(edge: .top))
             }
             
-            if viewModel.selectedStation == nil && viewModel.destinationStation == nil{
-                HStack(spacing: 8) {
-                    Spacer()
-                    favoriteStationsView
-                    searchButton
-                }
-            }
             Spacer()
             
             if let origin = viewModel.originStation,
@@ -139,12 +130,11 @@ struct ContentView: View {
                 )
                 .padding(.horizontal, 16)
                 .padding(.bottom, 24)
-               .transition(.move(edge: .bottom))
+                .transition(.move(edge: .bottom))
             }
         }
     }
     
-    // MARK: - Favorite Stations
     // MARK: - Favorite Stations
     private var favoriteStationsView: some View {
         Group {
@@ -154,13 +144,9 @@ struct ContentView: View {
                         ForEach(viewModel.stations.filter { viewModel.favoriteStations.contains($0.metrostationcode) }) { station in
                             Button(action: { viewModel.selectStation(station) }) {
                                 HStack(spacing: 6) {
-                                    // ⭐ النجمة
                                     Image(systemName: "star.fill")
                                         .font(.title3)
                                         .foregroundColor(Color.lineColor(for: station.metroline))
-                                    
-                                 
-                                    // 📝 النص
                                     Text(station.metrostationnamear)
                                         .font(.subheadline)
                                         .fontWeight(.semibold)
@@ -170,10 +156,10 @@ struct ContentView: View {
                                 .padding(.vertical, 10)
                                 .background(
                                     Capsule()
-                                        .fill(Color.grlb)  // ← خلفية خضراء فاتحة
+                                        .fill(Color.grlb)
                                         .overlay(
                                             Capsule()
-                                                .stroke(Color.lineColor(for: station.metroline), lineWidth: 2)  // ← border بلون المسار
+                                                .stroke(Color.lineColor(for: station.metroline), lineWidth: 2)
                                         )
                                         .shadow(color: Color.lineColor(for: station.metroline).opacity(0.2), radius: 4, y: 2)
                                 )
@@ -189,57 +175,17 @@ struct ContentView: View {
     
     // MARK: - Search Button
     private var searchButton: some View {
-        Group {
-            if viewModel.selectedStation == nil && viewModel.destinationStation == nil {
-                Button(action: { showSearchSheet = true }) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.title2)
-                        .foregroundColor(.lingr)
-                        .padding(14)
-                        .background(.grd)
-                        .clipShape(Circle())
-                        .shadow(color: Color.grd.opacity(0.5), radius: 8, y: 4)
-                }
-               
-                .padding(.trailing, 16)  // ← بس من اليمين
-                .padding(.top, 10)        // ← شوي من فوق
-            }
+        Button(action: { showSearchSheet = true }) {
+            Image(systemName: "magnifyingglass")
+                .font(.title2)
+                .foregroundColor(.lingr)
+                .padding(14)
+                .background(.grd)
+                .clipShape(Circle())
+                .shadow(color: Color.grd.opacity(0.5), radius: 8, y: 4)
         }
     }
     
-//    // MARK: - Loading & Error
-//    private var loadingAndErrorView: some View {
-//        Group {
-//            if viewModel.isLoading {
-//                VStack(spacing: 16) {
-//                    ProgressView().scaleEffect(1.5)
-//                    Text("جاري تحميل بيانات المترو...").font(.headline)
-//                }
-//                .padding(32)
-//                .background(.ultraThinMaterial)
-//                .cornerRadius(16)
-//            }
-//            
-//            if let error = viewModel.errorMessage {
-//                VStack(spacing: 16) {
-//                    Image(systemName: "exclamationmark.triangle.fill")
-//                        .font(.system(size: 40))
-//                        .foregroundColor(.orange)
-//                    Text(error).font(.headline).multilineTextAlignment(.center)
-//                    Button("إعادة المحاولة") {
-//                        viewModel.errorMessage = nil
-//                        viewModel.isLoading = true
-//                        viewModel.loadMetroData()
-//                    }
-//                    .buttonStyle(.borderedProminent)
-//                }
-//                .padding(32)
-//                .background(.ultraThinMaterial)
-//                .cornerRadius(16)
-//            }
-//        }
-//    }
-//    
     // MARK: - Station Card
     private var stationCardView: some View {
         Group {
@@ -265,7 +211,7 @@ struct ContentView: View {
     // MARK: - Location Button
     private var locationButton: some View {
         Group {
-            if viewModel.selectedStation == nil && viewModel.routeStations.isEmpty  {
+            if viewModel.selectedStation == nil && viewModel.routeStations.isEmpty {
                 VStack {
                     Spacer()
                     HStack {
@@ -286,6 +232,26 @@ struct ContentView: View {
                         .padding(.trailing, 20)
                         .padding(.bottom, viewModel.routeStations.isEmpty ? 40 : 110)
                     }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Fixed Top Buttons (البحث + المفضلة)
+    private var fixedTopButtons: some View {
+        Group {
+            if viewModel.selectedStation == nil &&
+               viewModel.destinationStation == nil {
+                VStack {
+                    HStack(spacing: 8) {
+                        Spacer()
+                        favoriteStationsView
+                        searchButton
+                    }
+                    .padding(.top,0.1 )
+                    .padding(.trailing, 16)
+                    
+                    Spacer()
                 }
             }
         }

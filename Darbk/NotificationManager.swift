@@ -9,6 +9,7 @@ import Foundation
 import UserNotifications
 import AVFoundation
 import UIKit
+
 class NotificationManager {
 
     static let shared = NotificationManager()
@@ -31,7 +32,7 @@ class NotificationManager {
     // إرسال إشعار الوصول للمحطة
     func sendArrivalNotification(stationName: String) {
         let content = UNMutableNotificationContent()
-        content.title = "وصلت محطتك"
+        content.title = "🎯 وصلت محطتك"
         content.body = "أنت الآن عند محطة \(stationName)"
         content.sound = UNNotificationSound.default
 
@@ -50,28 +51,61 @@ class NotificationManager {
             }
         }
 
-        vibrateDevice()
+        // هزتين قويتين متتاليتين
+        vibrateDeviceStrong()
         flashLightBlink()
     }
 
-    // MARK: - اهتزاز
-    private func vibrateDevice() {
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.success)
+    // MARK: - اهتزاز قوي (هزتين)
+    private func vibrateDeviceStrong() {
+        // الهزة الأولى - قوية
+        let generator1 = UINotificationFeedbackGenerator()
+        generator1.notificationOccurred(.success)
+        
+        // تأخير بسيط ثم الهزة الثانية
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            let generator2 = UINotificationFeedbackGenerator()
+            generator2.notificationOccurred(.success)
+        }
+        
+        // إضافة هزات إضافية للأجهزة الداعمة
+        if #available(iOS 13.0, *) {
+            let impactGenerator = UIImpactFeedbackGenerator(style: .heavy)
+            impactGenerator.impactOccurred()
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                let impactGenerator2 = UIImpactFeedbackGenerator(style: .heavy)
+                impactGenerator2.impactOccurred()
+            }
+        }
     }
 
-    // MARK: - فلاش
+    // MARK: - فلاش (يومض مرتين)
     private func flashLightBlink() {
         guard let device = AVCaptureDevice.default(for: .video),
               device.hasTorch else { return }
 
         do {
             try device.lockForConfiguration()
+            
+            // الومضة الأولى
             try device.setTorchModeOn(level: 1.0)
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 device.torchMode = .off
-                device.unlockForConfiguration()
+                
+                // الومضة الثانية
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    do {
+                        try device.setTorchModeOn(level: 1.0)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            device.torchMode = .off
+                            device.unlockForConfiguration()
+                        }
+                    } catch {
+                        print("Flash error: \(error)")
+                        device.unlockForConfiguration()
+                    }
+                }
             }
 
         } catch {
