@@ -229,7 +229,7 @@ struct CompactUpcomingBanner: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.grlback)
+                .fill(Color.grlb)
         )
         .padding(.horizontal, 12)
         .environment(\.layoutDirection, .leftToRight)
@@ -253,7 +253,7 @@ struct CompactUpcomingBanner: View {
                 
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 50, weight: .bold))
-                    .foregroundColor(.grlback)
+                    .foregroundColor(.grlb)
                     .symbolEffect(.bounce, value: showCelebration)
             }
             
@@ -305,7 +305,7 @@ struct CompactUpcomingBanner: View {
             
             Text("\(stop.stationNumber)")
                 .font(.system(size: 11, weight: .bold))
-                .foregroundColor(.white)
+                .foregroundColor(.lingr)
         }
     }
 }

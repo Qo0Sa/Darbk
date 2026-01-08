@@ -23,12 +23,12 @@ struct StationCard: View {
                 Button(action: onClose) {
                     ZStack {
                         Circle()
-                            .fill(Color.red)
+                            .fill(Color.grlback)
                             .frame(width: 28, height: 28)
-                            .shadow(color: .red.opacity(0.3), radius: 4, y: 2)
+                            //.shadow(color: .red.opacity(0.3), radius: 4, y: 2)
                         Image(systemName: "xmark")
                             .font(.system(size: 15, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(.lingr)
                     }
                 }
                 
@@ -56,12 +56,12 @@ struct StationCard: View {
                 
                 Spacer()
                 
-                Text(station.metrostationcode)
-                    .font(.caption)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(Color.gray.opacity(0.18))
-                    .cornerRadius(6)
+//                Text(station.metrostationcode)
+//                    .font(.caption)
+//                    .padding(.horizontal, 10)
+//                    .padding(.vertical, 4)
+//                    .background(Color.gray.opacity(0.18))
+//                    .cornerRadius(6)
             }
             .environment(\.layoutDirection, .rightToLeft)
             
@@ -75,14 +75,14 @@ struct StationCard: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
                 .foregroundColor(.lingr)
-                .background(.grd)
+                .background(.grlback)
                 .clipShape(Capsule())
             }
             .environment(\.layoutDirection, .rightToLeft)
         }
         
         .padding(16)
-        .background(.grlback)
+        .background(.grlb)
         .cornerRadius(18)
         .shadow(radius: 10, y: 4)
         

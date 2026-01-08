@@ -187,10 +187,10 @@ struct ContentView: View {
     private var searchButton: some View {
         Button(action: { showSearchSheet = true }) {
             Image(systemName: "magnifyingglass")
-                .font(.title2)
-                .foregroundColor(.lingr)
+                .font(.title)
+                .foregroundColor(.grlback)
                 .padding(14)
-                .background(.grd)
+                .background(.lingr)
                 .clipShape(Circle())
                 .shadow(color: Color.grd.opacity(0.5), radius: 8, y: 4)
         }
