@@ -10,7 +10,7 @@ struct CompactUpcomingBanner: View {
     @State private var hasArrived = false
     @State private var showCelebration = false
     @State private var hasNotified = false
-    @StateObject private var simulator = LocationSimulator.shared
+  //  @StateObject private var simulator = LocationSimulator.shared
     
     // حساب عدد المحطات المتبقية بدقة
     private var remainingStops: Int {
@@ -97,10 +97,8 @@ struct CompactUpcomingBanner: View {
     
     // حساب المسافة بين المستخدم والوجهة
     private var distanceToDestination: CLLocationDistance? {
-        // استخدام الموقع المحاكي أو الحقيقي
-        let currentLocation = simulator.getLocation(realLocation: userLocation)
-        
-        guard let userCoord = currentLocation,
+        // استخدام الموقع الحقيقي فقط
+        guard let userCoord = userLocation,
               let destination = destinationStation else {
             return nil
         }

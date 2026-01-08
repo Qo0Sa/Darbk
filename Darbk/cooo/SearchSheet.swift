@@ -48,7 +48,7 @@ struct SearchSheet: View {
     }
     
     var selectedLineName: String {
-        guard let line = selectedLine else { return "المسارات" }
+        guard let line = selectedLine else { return "" }
         return Color.lineName(for: line)
     }
     
@@ -56,8 +56,8 @@ struct SearchSheet: View {
         NavigationView {
             VStack(spacing: 0) {
                 headerView
-                lineFilterView
                 searchBar
+                lineFilterView
                 stationsList
             }
             .navigationBarHidden(true)

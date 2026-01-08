@@ -12,7 +12,7 @@ struct ContentView: View {
     @State private var viewModel = MapViewModel()
     @State private var locationManager = LocationManager()
     @State private var showSearchSheet = false
-    @StateObject private var simulator = LocationSimulator.shared
+   // @StateObject private var simulator = LocationSimulator.shared
     
     var body: some View {
         ZStack {
@@ -23,7 +23,7 @@ struct ContentView: View {
             fixedTopButtons
             
             // لوحة التحكم بالمحاكاة (للتطوير فقط)
-            simulatorControlPanel
+          //  simulatorControlPanel
         }
         .sheet(isPresented: $showSearchSheet) {
             SearchSheet(
@@ -86,7 +86,7 @@ struct ContentView: View {
             if isSelected {
                 Circle()
                     .fill(Color.lineColor(for: station.metroline).opacity(0.25))
-                    .frame(width: 40, height: 40)
+                    .frame(width: 60, height: 60)
             }
             ZStack {
                 Circle()
@@ -131,7 +131,7 @@ struct ContentView: View {
                     accentColor: .black,
                     onClear: {
                         viewModel.clearRoute()
-                        simulator.stopSimulation()
+                    //    simulator.stopSimulation()
                     }
                 )
                 .padding(.horizontal, 16)
@@ -206,7 +206,7 @@ struct ContentView: View {
                             viewModel.selectedStation = nil
                             
                             // بدء المحاكاة تلقائياً بعد 5 ثواني
-                            simulator.setTargetStation(station, arrivalDelay: 5)
+//                            simulator.setTargetStation(station, arrivalDelay: 5)
                         }
                     )
                     .padding()
@@ -267,40 +267,40 @@ struct ContentView: View {
     }
     
     // MARK: - Simulator Control Panel (للتطوير فقط)
-    private var simulatorControlPanel: some View {
-        VStack {
-            Spacer()
-            HStack {
-                if simulator.targetStation != nil || simulator.isSimulating {
-                    VStack(alignment: .leading, spacing: 4) {
-                        if let station = simulator.targetStation {
-                            Text(station.metrostationnamear)
-                                .font(.caption)
-                                .fontWeight(.bold)
-                        }
-                        Text(simulator.statusText)
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                        
-                        if simulator.targetStation != nil && !simulator.isSimulating {
-                            Button("إيقاف") {
-                                simulator.stopSimulation()
-                            }
-                            .font(.caption2)
-                            .foregroundColor(.red)
-                        }
-                    }
-                    .padding(8)
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(8)
-                    .shadow(radius: 4)
-                }
-                Spacer()
-            }
-            .padding(.leading, 16)
-            .padding(.bottom, 100)
-        }
-    }
+//    private var simulatorControlPanel: some View {
+//        VStack {
+//            Spacer()
+//            HStack {
+//                if simulator.targetStation != nil || simulator.isSimulating {
+//                    VStack(alignment: .leading, spacing: 4) {
+//                        if let station = simulator.targetStation {
+//                            Text(station.metrostationnamear)
+//                                .font(.caption)
+//                                .fontWeight(.bold)
+//                        }
+//                        Text(simulator.statusText)
+//                            .font(.caption2)
+//                            .foregroundColor(.secondary)
+//                        
+//                        if simulator.targetStation != nil && !simulator.isSimulating {
+//                            Button("إيقاف") {
+//                                simulator.stopSimulation()
+//                            }
+//                            .font(.caption2)
+//                            .foregroundColor(.red)
+//                        }
+//                    }
+//                    .padding(8)
+//                    .background(.ultraThinMaterial)
+//                    .cornerRadius(8)
+//                    .shadow(radius: 4)
+//                }
+//                Spacer()
+//            }
+//            .padding(.leading, 16)
+//            .padding(.bottom, 100)
+//        }
+//    }
 }
 
 #Preview {
