@@ -44,6 +44,15 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
 class MapViewModel {
     var lines: [MetroLine] = []
     var stations: [MetroStation] = []
+    
+    var uniqueStations: [MetroStation] {
+        Dictionary(
+            grouping: stations,
+            by: { $0.metrostationcode }
+        )
+        .compactMap { $0.value.first }
+    }
+
     var selectedStation: MetroStation?
     var isLoading = true
     var errorMessage: String?
@@ -170,7 +179,13 @@ class MapViewModel {
         var codeMap: [String: MetroStation] = [:]
         
         // خزن كل محطة بكودها
-        stations.forEach { codeMap[$0.metrostationcode] = $0 }
+        Dictionary(
+            grouping: stations,
+            by: { $0.metrostationcode }
+        ).forEach { code, list in
+            codeMap[code] = list.first
+        }
+
         
         // 1️⃣ اربط كل محطة بمحطتها التالية في نفس الخط
         let byLine = Dictionary(grouping: stations, by: { $0.metroline })

@@ -147,7 +147,11 @@ struct ContentView: View {
             if !viewModel.favoriteStations.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
-                        ForEach(viewModel.stations.filter { viewModel.favoriteStations.contains($0.metrostationcode) }) { station in
+                        ForEach(
+                            viewModel.uniqueStations.filter {
+                                viewModel.favoriteStations.contains($0.metrostationcode)
+                            }
+                        ) { station in
                             Button(action: { viewModel.selectStation(station) }) {
                                 HStack(spacing: 6) {
                                     Image(systemName: "star.fill")
