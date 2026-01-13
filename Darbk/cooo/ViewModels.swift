@@ -44,6 +44,15 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
 class MapViewModel {
     var lines: [MetroLine] = []
     var stations: [MetroStation] = []
+    
+    var uniqueStations: [MetroStation] {
+        Dictionary(
+            grouping: stations,
+            by: { $0.metrostationcode }
+        )
+        .compactMap { $0.value.first }
+    }
+
     var selectedStation: MetroStation?
     var isLoading = true
     var errorMessage: String?
@@ -166,6 +175,7 @@ class MapViewModel {
     }
     
     func buildGraph() {
+<<<<<<< HEAD
             let graph = MetroGraph()
             var codeMap: [String: MetroStation] = [:]
             
@@ -179,6 +189,26 @@ class MapViewModel {
                 for i in 0..<(sorted.count - 1) {
                     graph.addEdge(sorted[i].metrostationcode, sorted[i + 1].metrostationcode)
                 }
+=======
+        let graph = MetroGraph()
+        var codeMap: [String: MetroStation] = [:]
+        
+        // خزن كل محطة بكودها
+        Dictionary(
+            grouping: stations,
+            by: { $0.metrostationcode }
+        ).forEach { code, list in
+            codeMap[code] = list.first
+        }
+
+        
+        // 1️⃣ اربط كل محطة بمحطتها التالية في نفس الخط
+        let byLine = Dictionary(grouping: stations, by: { $0.metroline })
+        for (_, lineStations) in byLine {
+            let sorted = lineStations.sorted { $0.stationseq < $1.stationseq }
+            for i in 0..<(sorted.count - 1) {
+                graph.addEdge(sorted[i].metrostationcode, sorted[i + 1].metrostationcode)
+>>>>>>> tes
             }
             
             // 2️⃣ التقاطعات الفعلية فقط

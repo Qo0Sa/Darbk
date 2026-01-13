@@ -147,7 +147,11 @@ struct ContentView: View {
             if !viewModel.favoriteStations.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
-                        ForEach(viewModel.stations.filter { viewModel.favoriteStations.contains($0.metrostationcode) }) { station in
+                        ForEach(
+                            viewModel.uniqueStations.filter {
+                                viewModel.favoriteStations.contains($0.metrostationcode)
+                            }
+                        ) { station in
                             Button(action: { viewModel.selectStation(station) }) {
                                 HStack(spacing: 6) {
                                     Image(systemName: "star.fill")
@@ -183,10 +187,10 @@ struct ContentView: View {
     private var searchButton: some View {
         Button(action: { showSearchSheet = true }) {
             Image(systemName: "magnifyingglass")
-                .font(.title2)
-                .foregroundColor(.lingr)
+                .font(.title)
+                .foregroundColor(.grlback)
                 .padding(14)
-                .background(.grd)
+                .background(.lingr)
                 .clipShape(Circle())
                 .shadow(color: Color.grd.opacity(0.5), radius: 8, y: 4)
         }

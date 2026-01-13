@@ -13,17 +13,17 @@ struct RouteSummaryBar: View {
             Button(action: onClear) {
                 Image(systemName: "xmark")
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(.lingr)
                     .frame(width: 40, height: 40)
                     .background(
                         LinearGradient(
-                            colors: [.red, .red.opacity(0.8)],
+                            colors: [.grlback],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
                     .clipShape(Circle())
-                    .shadow(color: .red.opacity(0.4), radius: 4, y: 2)
+                    //.shadow(color: .red.opacity(0.4), radius: 4, y: 2)
             }
             
             // معلومات الرحلة
@@ -111,8 +111,8 @@ struct RouteSummaryBar: View {
         .padding(.horizontal, 16)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color.grlback)
-                .stroke(Color.lingr.opacity(0.25), lineWidth: 1)
+                .fill(Color.grlb)
+            //    .stroke(Color.lingr.opacity(0.25), lineWidth: 1)
 
         )
 
