@@ -166,53 +166,74 @@ class MapViewModel {
     }
     
     func buildGraph() {
-        let graph = MetroGraph()
-        var codeMap: [String: MetroStation] = [:]
-        
-        // خزن كل محطة بكودها
-        stations.forEach { codeMap[$0.metrostationcode] = $0 }
-        
-        // 1️⃣ اربط كل محطة بمحطتها التالية في نفس الخط
-        let byLine = Dictionary(grouping: stations, by: { $0.metroline })
-        for (_, lineStations) in byLine {
-            let sorted = lineStations.sorted { $0.stationseq < $1.stationseq }
-            for i in 0..<(sorted.count - 1) {
-                graph.addEdge(sorted[i].metrostationcode, sorted[i + 1].metrostationcode)
-            }
-        }
-        
-        // 2️⃣ اربط المحطات المشتركة (التقاطعات)
-        let byNameAr = Dictionary(grouping: stations, by: { $0.metrostationnamear })
-        for (_, group) in byNameAr where group.count > 1 {
-            for i in 0..<group.count {
-                for j in (i+1)..<group.count {
-                    graph.addEdge(group[i].metrostationcode, group[j].metrostationcode)
+            let graph = MetroGraph()
+            var codeMap: [String: MetroStation] = [:]
+            
+            // خزن كل محطة بكودها
+            stations.forEach { codeMap[$0.metrostationcode] = $0 }
+            
+            // 1️⃣ اربط كل محطة بمحطتها التالية في نفس الخط
+            let byLine = Dictionary(grouping: stations, by: { $0.metroline })
+            for (_, lineStations) in byLine {
+                let sorted = lineStations.sorted { $0.stationseq < $1.stationseq }
+                for i in 0..<(sorted.count - 1) {
+                    graph.addEdge(sorted[i].metrostationcode, sorted[i + 1].metrostationcode)
                 }
             }
+            
+            // 2️⃣ التقاطعات الفعلية فقط
+            let intersections: [(String, [String])] = [
+                ("المالية", ["Blue", "Yellow", "Purple"]),
+                ("STC", ["Blue", "Red"]),
+                ("المتحف الوطني", ["Blue", "Green"]),
+                ("قصر الحكم", ["Blue", "Orange"]),
+                ("النسيم", ["Orange", "Purple"]),
+                ("الحمراء", ["Red", "Purple"]),
+                ("وزارة التعليم", ["Red", "Green"]),
+                ("سابك", ["Yellow", "Purple"]),
+                ("عثمان بن عفان", ["Yellow", "Purple"]),
+                ("الربيع", ["Yellow", "Purple"])
+            ]
+            
+            for (stationName, lines) in intersections {
+                let matchingStations = stations.filter {
+                    $0.metrostationnamear.contains(stationName) && lines.contains($0.metroline)
+                }
+                
+                // اربط كل محطة بالثانية في نفس التقاطع
+                for i in 0..<matchingStations.count {
+                    for j in (i+1)..<matchingStations.count {
+                        graph.addEdge(matchingStations[i].metrostationcode, matchingStations[j].metrostationcode)
+                    }
+                }
+            }
+            
+            metroGraph = graph
+            stationByCode = codeMap
         }
-        
-        metroGraph = graph
-        stationByCode = codeMap
-    }
-
     
+    
+   
+    
+
     func generateStationNumbers() {
         var numbering: [String: Int] = [:]
         
         let groupedByLine = Dictionary(grouping: stations, by: { $0.metroline })
         
         for (_, lineStations) in groupedByLine {
+            // ✅ رتب المحطات حسب stationseq داخل كل خط
             let sorted = lineStations.sorted { $0.stationseq < $1.stationseq }
             
-            // رقم كل محطة يبدأ من 11 ويزيد واحد لكل محطة بالخط
+            // ✅ رقّم كل محطة حسب موقعها الفعلي في الخط (من 0)
             for (index, station) in sorted.enumerated() {
+                // الرقم = 11 + ترتيب المحطة في الخط
                 numbering[station.metrostationcode] = 11 + index
             }
         }
         
         stationNumbering = numbering
     }
-
     
     
     func setDestination(to station: MetroStation, userLocation: CLLocationCoordinate2D?) {
