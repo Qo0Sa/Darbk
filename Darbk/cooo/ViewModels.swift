@@ -78,8 +78,6 @@ class MapViewModel {
         }
     }
     
-    
-    
     class MetroGraph {
         private var adjacency: [String: Set<String>] = [:]
 
@@ -108,7 +106,7 @@ class MapViewModel {
                 }
             }
 
-            return [] // لو ما وصلنا
+            return []
         }
         
         var allStations: [String] {
@@ -116,11 +114,8 @@ class MapViewModel {
         }
     }
 
-    
-    
     @MainActor
     private func loadStations() async {
-        // ✅ نقرأ من الملف المحلي بدل API
         guard let url = Bundle.main.url(forResource: "metro-stations", withExtension: "json"),
               let data = try? Data(contentsOf: url) else {
             errorMessage = "فشل تحميل ملف المحطات"
@@ -135,13 +130,8 @@ class MapViewModel {
             generateStationNumbers()
             
             if !stations.isEmpty {
-                let coords = stations.map { $0.coordinate }
-                cameraPosition = .region(
-                    MKCoordinateRegion(
-                        center: calculateCenter(coords),
-                        span: calculateSpan(coords)
-                    )
-                )
+                let _ = stations.map { $0.coordinate }
+                // Optionally adjust camera here
             }
             isLoading = false
         } catch {
@@ -149,9 +139,6 @@ class MapViewModel {
             isLoading = false
         }
     }
-    
-    
-    
     
     @MainActor
     private func loadLines() async {
@@ -175,76 +162,55 @@ class MapViewModel {
     }
     
     func buildGraph() {
-<<<<<<< HEAD
-            let graph = MetroGraph()
-            var codeMap: [String: MetroStation] = [:]
-            
-            // خزن كل محطة بكودها
-            stations.forEach { codeMap[$0.metrostationcode] = $0 }
-            
-            // 1️⃣ اربط كل محطة بمحطتها التالية في نفس الخط
-            let byLine = Dictionary(grouping: stations, by: { $0.metroline })
-            for (_, lineStations) in byLine {
-                let sorted = lineStations.sorted { $0.stationseq < $1.stationseq }
-                for i in 0..<(sorted.count - 1) {
-                    graph.addEdge(sorted[i].metrostationcode, sorted[i + 1].metrostationcode)
-                }
-=======
         let graph = MetroGraph()
         var codeMap: [String: MetroStation] = [:]
         
         // خزن كل محطة بكودها
-        Dictionary(
-            grouping: stations,
-            by: { $0.metrostationcode }
-        ).forEach { code, list in
-            codeMap[code] = list.first
+        Dictionary(grouping: stations, by: { $0.metrostationcode }).forEach { code, list in
+            if let first = list.first {
+                codeMap[code] = first
+            }
         }
-
         
         // 1️⃣ اربط كل محطة بمحطتها التالية في نفس الخط
         let byLine = Dictionary(grouping: stations, by: { $0.metroline })
         for (_, lineStations) in byLine {
             let sorted = lineStations.sorted { $0.stationseq < $1.stationseq }
-            for i in 0..<(sorted.count - 1) {
-                graph.addEdge(sorted[i].metrostationcode, sorted[i + 1].metrostationcode)
->>>>>>> tes
-            }
-            
-            // 2️⃣ التقاطعات الفعلية فقط
-            let intersections: [(String, [String])] = [
-                ("المالية", ["Blue", "Yellow", "Purple"]),
-                ("STC", ["Blue", "Red"]),
-                ("المتحف الوطني", ["Blue", "Green"]),
-                ("قصر الحكم", ["Blue", "Orange"]),
-                ("النسيم", ["Orange", "Purple"]),
-                ("الحمراء", ["Red", "Purple"]),
-                ("وزارة التعليم", ["Red", "Green"]),
-                ("سابك", ["Yellow", "Purple"]),
-                ("عثمان بن عفان", ["Yellow", "Purple"]),
-                ("الربيع", ["Yellow", "Purple"])
-            ]
-            
-            for (stationName, lines) in intersections {
-                let matchingStations = stations.filter {
-                    $0.metrostationnamear.contains(stationName) && lines.contains($0.metroline)
-                }
-                
-                // اربط كل محطة بالثانية في نفس التقاطع
-                for i in 0..<matchingStations.count {
-                    for j in (i+1)..<matchingStations.count {
-                        graph.addEdge(matchingStations[i].metrostationcode, matchingStations[j].metrostationcode)
-                    }
+            if sorted.count >= 2 {
+                for i in 0..<(sorted.count - 1) {
+                    graph.addEdge(sorted[i].metrostationcode, sorted[i + 1].metrostationcode)
                 }
             }
-            
-            metroGraph = graph
-            stationByCode = codeMap
         }
-    
-    
-   
-    
+        
+        // 2️⃣ التقاطعات الفعلية فقط
+        let intersections: [(String, [String])] = [
+            ("المالية", ["Blue", "Yellow", "Purple"]),
+            ("STC", ["Blue", "Red"]),
+            ("المتحف الوطني", ["Blue", "Green"]),
+            ("قصر الحكم", ["Blue", "Orange"]),
+            ("النسيم", ["Orange", "Purple"]),
+            ("الحمراء", ["Red", "Purple"]),
+            ("وزارة التعليم", ["Red", "Green"]),
+            ("سابك", ["Yellow", "Purple"]),
+            ("عثمان بن عفان", ["Yellow", "Purple"]),
+            ("الربيع", ["Yellow", "Purple"])
+        ]
+        
+        for (stationName, lines) in intersections {
+            let matchingStations = stations.filter {
+                $0.metrostationnamear.contains(stationName) && lines.contains($0.metroline)
+            }
+            for i in 0..<matchingStations.count {
+                for j in (i + 1)..<matchingStations.count {
+                    graph.addEdge(matchingStations[i].metrostationcode, matchingStations[j].metrostationcode)
+                }
+            }
+        }
+        
+        metroGraph = graph
+        stationByCode = codeMap
+    }
 
     func generateStationNumbers() {
         var numbering: [String: Int] = [:]
@@ -252,19 +218,14 @@ class MapViewModel {
         let groupedByLine = Dictionary(grouping: stations, by: { $0.metroline })
         
         for (_, lineStations) in groupedByLine {
-            // ✅ رتب المحطات حسب stationseq داخل كل خط
             let sorted = lineStations.sorted { $0.stationseq < $1.stationseq }
-            
-            // ✅ رقّم كل محطة حسب موقعها الفعلي في الخط (من 0)
             for (index, station) in sorted.enumerated() {
-                // الرقم = 11 + ترتيب المحطة في الخط
                 numbering[station.metrostationcode] = 11 + index
             }
         }
         
         stationNumbering = numbering
     }
-    
     
     func setDestination(to station: MetroStation, userLocation: CLLocationCoordinate2D?) {
         destinationStation = station
